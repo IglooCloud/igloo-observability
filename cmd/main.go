@@ -27,9 +27,9 @@ func main() {
 		panic(err)
 	}
 
-	values, err := real.Read("test", time.Now().Add(-time.Hour), time.Now())
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(values)
+	fmt.Println(gauge.Read("test", time.Now().Add(-time.Hour), time.Now()))
+	fmt.Println(gauge.Mean("test", time.Now().Add(-time.Hour), time.Now()))
+	fmt.Println(gauge.Min("test", time.Now().Add(-time.Hour), time.Now()))
+	fmt.Println(gauge.Max("test", time.Now().Add(-time.Hour), time.Now()))
+	fmt.Println(gauge.Percentile("test", time.Now().Add(-time.Hour), time.Now(), 0.5))
 }
