@@ -2,8 +2,8 @@ package api
 
 import (
 	"crypto/tls"
+	_ "embed"
 	"fmt"
-
 	"net/http"
 	"time"
 
@@ -13,6 +13,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
+
+//go:embed homepage.html
+var homepageHTML []byte
 
 var logger = log.Default().Service("api")
 
@@ -42,6 +45,10 @@ func Start(gauge warehouse.Gauge, config Config) {
 	// Serving the .well-known route to allow automatic
 	// Let's Encrypt certificate renewal
 	router.Static("/.well-known", "./.well-known")
+
+	router.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html", homepageHTML)
+	})
 
 	registerGaugeRoutes(router, gauge)
 
