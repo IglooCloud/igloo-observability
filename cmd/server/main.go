@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,7 +26,13 @@ func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge) 
 }
 
 func main() {
-	config, err := config.LoadTOML("./example.toml")
+	if len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "Usage: server <config-path>")
+		os.Exit(1)
+	}
+
+	configPath := os.Args[1]
+	config, err := config.LoadTOML(configPath)
 	if err != nil {
 		panic(err)
 	}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Observability OS Instrumentation
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/home/azureuser/observability-os-instrumentation
+
+[Install]
+WantedBy=multi-user.target
