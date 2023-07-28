@@ -1,0 +1,9 @@
+[database]
+path = "./foo.db"
+
+[[collector.endpoints]]
+url = "http://localhost:6001/metrics"
+secret = "secret"
+enabled = true
+schedule = "@every 10s"
+bucket = "test"
