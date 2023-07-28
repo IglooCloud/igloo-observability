@@ -8,15 +8,18 @@ import (
 	"github.com/IglooCloud/igloo-observability/internal/api"
 	"github.com/IglooCloud/igloo-observability/internal/collector"
 	"github.com/IglooCloud/igloo-observability/internal/config"
+	"github.com/IglooCloud/igloo-observability/internal/log"
 	"github.com/IglooCloud/igloo-observability/internal/storage"
 	"github.com/IglooCloud/igloo-observability/internal/warehouse"
 )
 
 func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge) {
+	var logger = log.Default().Service("worker")
+
 	for endpoint := range endpointStream {
 		err := collector.Fetch(endpoint, gauge)
 		if err != nil {
-			panic(err)
+			logger.Error(err)
 		}
 	}
 }
