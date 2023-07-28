@@ -8,14 +8,18 @@ import (
 	stat "gonum.org/v1/gonum/stat"
 )
 
+var NO_RECORD_FOUND = errors.New("no records found for this time range")
+
 type Gauge struct {
 	Storage Store[float64]
 }
 
+// Write a record to the database
 func (g *Gauge) Write(bucket string, value Record[float64]) error {
 	return g.Storage.Write(bucket, value)
 }
 
+// Read records in the time range
 func (g *Gauge) Read(bucket string, start time.Time, end time.Time) ([]Record[float64], error) {
 	records := make([]Record[float64], 0)
 	recordIterator, err := g.Storage.Read(bucket, start, end)
@@ -34,6 +38,7 @@ func (g *Gauge) Read(bucket string, start time.Time, end time.Time) ([]Record[fl
 	return records, nil
 }
 
+// ReadValues reads the values associated to the records in the time range
 func (g *Gauge) ReadValues(bucket string, start time.Time, end time.Time) ([]float64, error) {
 	records := make([]float64, 0)
 	iterator, err := g.Storage.ReadValues(bucket, start, end)
@@ -52,6 +57,7 @@ func (g *Gauge) ReadValues(bucket string, start time.Time, end time.Time) ([]flo
 	return records, nil
 }
 
+// Mean returns the mean value of the records in the time range
 func (g *Gauge) Mean(bucket string, start time.Time, end time.Time) (float64, error) {
 	iterator, err := g.Storage.ReadValues(bucket, start, end)
 	if err != nil {
@@ -69,12 +75,13 @@ func (g *Gauge) Mean(bucket string, start time.Time, end time.Time) (float64, er
 	if err := iterator.Err(); err != nil {
 		return 0, err
 	} else if count == 0 {
-		return 0, errors.New("no records found for this time range")
+		return 0, NO_RECORD_FOUND
 	}
 
 	return sum / float64(count), nil
 }
 
+// Min returns the minimum value of the records in the time range
 func (g *Gauge) Min(bucket string, start time.Time, end time.Time) (float64, error) {
 	iterator, err := g.Storage.ReadValues(bucket, start, end)
 	if err != nil {
@@ -83,7 +90,7 @@ func (g *Gauge) Min(bucket string, start time.Time, end time.Time) (float64, err
 
 	firstValue, ok := iterator.Next()
 	if !ok {
-		return 0, errors.New("no records found for this time range")
+		return 0, NO_RECORD_FOUND
 	}
 
 	var min float64 = firstValue
@@ -101,6 +108,7 @@ func (g *Gauge) Min(bucket string, start time.Time, end time.Time) (float64, err
 	return min, nil
 }
 
+// Max returns the maximum value of the records in the time range
 func (g *Gauge) Max(bucket string, start time.Time, end time.Time) (float64, error) {
 	iterator, err := g.Storage.ReadValues(bucket, start, end)
 	if err != nil {
@@ -109,7 +117,7 @@ func (g *Gauge) Max(bucket string, start time.Time, end time.Time) (float64, err
 
 	firstValue, ok := iterator.Next()
 	if !ok {
-		return 0, errors.New("no records found for this time range")
+		return 0, NO_RECORD_FOUND
 	}
 
 	var max float64 = firstValue
@@ -127,10 +135,13 @@ func (g *Gauge) Max(bucket string, start time.Time, end time.Time) (float64, err
 	return max, nil
 }
 
+// Percentile returns the percentile value of the records in the time range
 func (g *Gauge) Percentile(bucket string, start time.Time, end time.Time, percentile float64) (float64, error) {
 	values, err := g.ReadValues(bucket, start, end)
 	if err != nil {
 		return 0, err
+	} else if len(values) == 0 {
+		return 0, NO_RECORD_FOUND
 	}
 
 	sort.Float64s(values)

@@ -1,11 +1,25 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/IglooCloud/igloo-observability/internal/api"
 	"github.com/IglooCloud/igloo-observability/internal/collector"
 	"github.com/IglooCloud/igloo-observability/internal/config"
 	"github.com/IglooCloud/igloo-observability/internal/storage"
 	"github.com/IglooCloud/igloo-observability/internal/warehouse"
 )
+
+func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge) {
+	for endpoint := range endpointStream {
+		err := collector.Fetch(endpoint, gauge)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
 func main() {
 	config, err := config.LoadTOML("./example.toml")
@@ -23,10 +37,12 @@ func main() {
 	gauge := warehouse.Gauge{Storage: real}
 
 	endpointStream := collector.RequestStream(config.Collector)
-	for endpoint := range endpointStream {
-		err := collector.Fetch(endpoint, gauge)
-		if err != nil {
-			panic(err)
-		}
-	}
+	go fetchWorker(endpointStream, gauge)
+
+	go api.Start(gauge, config.API)
+
+	// Block until a signal is received
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
 }

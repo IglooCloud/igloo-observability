@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/IglooCloud/igloo-observability/internal/api"
 	"github.com/IglooCloud/igloo-observability/internal/collector"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -11,11 +12,18 @@ import (
 type Config struct {
 	DBPath    string
 	Collector collector.Config
+	API       api.Config
 }
 
 type tomlConfig struct {
 	Database struct {
 		Path string
+	}
+	API struct {
+		Port    int
+		SSLPort int
+		SSLCert string
+		SSLKey  string
 	}
 	Collector struct {
 		Endpoints []struct {
@@ -54,6 +62,12 @@ func LoadTOML(path string) (Config, error) {
 		DBPath: rawConfig.Database.Path,
 		Collector: collector.Config{
 			Schedules: make([]collector.EndpointSchedule, len(rawConfig.Collector.Endpoints)),
+		},
+		API: api.Config{
+			Port:    rawConfig.API.Port,
+			SSLPort: rawConfig.API.SSLPort,
+			SSLCert: rawConfig.API.SSLCert,
+			SSLKey:  rawConfig.API.SSLKey,
 		},
 	}
 	for i, endpoint := range rawConfig.Collector.Endpoints {
