@@ -8,8 +8,8 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/home/azureuser/igloo-observability/build/server /home/azureuser/config.toml
-WorkingDirectory=/home/azureuser
+ExecStart=/home/azureuser/igloo-observability/server /home/azureuser/igloo-observability/config.toml
+WorkingDirectory=/home/azureuser/igloo-observability
 
 [Install]
 WantedBy=multi-user.target
