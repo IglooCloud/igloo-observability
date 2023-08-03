@@ -3,6 +3,7 @@ package observability
 import (
 	"net/http"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 func New() (middleware gin.HandlerFunc, routeHandler gin.HandlerFunc) {
 	m := metrics{
+		lock:          &sync.RWMutex{},
 		StartTime:     time.Now(),
 		TotalRequests: &atomic.Int64{},
 		TotalLatency:  &atomic.Int64{},
