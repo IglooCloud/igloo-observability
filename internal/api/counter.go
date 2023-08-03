@@ -18,7 +18,7 @@ func counterRecordsToCSV(records []warehouse.PeriodRecord[int64]) string {
 }
 
 func registerCounterRoutes(r *gin.Engine, counter warehouse.Counter) {
-	r.GET("/gauge/:name", func(c *gin.Context) {
+	r.GET("/counter/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		var query struct {
 			Start  time.Time `form:"start" time_format:"2006-01-02T15:04:05Z"`
