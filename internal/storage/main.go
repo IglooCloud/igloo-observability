@@ -37,6 +37,15 @@ func Initialize(db *sql.DB) error {
 	);
 	
 	CREATE INDEX IF NOT EXISTS idx_realrecords_bucket_timestamp ON realrecords(bucket, timestamp);
+
+	CREATE TABLE IF NOT EXISTS intperiodrecords(
+		value REAL NOT NULL,
+		start INTEGER NOT NULL,
+		end INTEGER NOT NULL,
+		bucket TEXT NOT NULL
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_intperiodrecords_bucket_timestamp ON intperiodrecords(bucket, start, end);
 	`
 
 	_, err := Exec(db, sql_table)
@@ -45,6 +54,10 @@ func Initialize(db *sql.DB) error {
 
 func RealFromDB(db *sql.DB) *Real {
 	return &Real{db}
+}
+
+func PeriodIntFromDB(db *sql.DB) *PeriodInt {
+	return &PeriodInt{db}
 }
 
 func Connect(path string) (*sql.DB, error) {

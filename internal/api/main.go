@@ -29,7 +29,7 @@ type Config struct {
 // Run starts an HTTP and HTTPS server with automatic reloading
 // of SSL certificates and compatible with automatic renewal
 // of the certificates through Let's Encrypt.
-func Start(gauge warehouse.Gauge, config Config) {
+func Start(gauge warehouse.Gauge, counter warehouse.Counter, config Config) {
 	router := gin.Default()
 
 	// Remove all CORS blocks
@@ -51,6 +51,7 @@ func Start(gauge warehouse.Gauge, config Config) {
 	})
 
 	registerGaugeRoutes(router, gauge)
+	registerCounterRoutes(router, counter)
 
 	// Setup server listening on SSL port using certman to
 	// automatically reload the SSL certificate

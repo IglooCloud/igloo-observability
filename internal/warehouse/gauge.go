@@ -1,14 +1,11 @@
 package warehouse
 
 import (
-	"errors"
 	"sort"
 	"time"
 
 	stat "gonum.org/v1/gonum/stat"
 )
-
-var NO_RECORD_FOUND = errors.New("no records found for this time range")
 
 type Gauge struct {
 	Storage Store[float64]

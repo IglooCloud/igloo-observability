@@ -14,11 +14,11 @@ import (
 	"github.com/IglooCloud/igloo-observability/internal/warehouse"
 )
 
-func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge) {
+func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge, counter warehouse.Counter) {
 	var logger = log.Default().Service("worker")
 
 	for endpoint := range endpointStream {
-		err := collector.Fetch(endpoint, gauge)
+		err := collector.Fetch(endpoint, gauge, counter)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -26,6 +26,7 @@ func fetchWorker(endpointStream chan collector.Endpoint, gauge warehouse.Gauge) 
 }
 
 func main() {
+	// Load config
 	if len(os.Args) != 2 {
 		fmt.Fprintln(os.Stderr, "Usage: server <config-path>")
 		os.Exit(1)
@@ -37,19 +38,23 @@ func main() {
 		panic(err)
 	}
 
+	// Connect to database
 	db, err := storage.Connect(config.DBPath)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
+	// Inject dependencies
 	real := storage.RealFromDB(db)
+	periodInt := storage.PeriodIntFromDB(db)
 	gauge := warehouse.Gauge{Storage: real}
+	counter := warehouse.Counter{Storage: periodInt}
 
 	endpointStream := collector.RequestStream(config.Collector)
-	go fetchWorker(endpointStream, gauge)
+	go fetchWorker(endpointStream, gauge, counter)
 
-	go api.Start(gauge, config.API)
+	go api.Start(gauge, counter, config.API)
 
 	// Block until a signal is received
 	sigChan := make(chan os.Signal, 1)
