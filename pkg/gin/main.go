@@ -46,22 +46,22 @@ func newRouteHandler(m metrics) gin.HandlerFunc {
 		payload := collector.FetchResponse{
 			Gauges: map[string]collector.GaugeRecord{},
 			Counters: map[string]collector.CounterRecord{
-				"requests": {
+				"http.requests": {
 					Value: output.TotalRequests,
 					Start: output.StartTime,
 					End:   output.EndTime,
 				},
-				"totalLatency": {
+				"http.totalLatency": {
 					Value: output.TotalLatency,
 					Start: output.StartTime,
 					End:   output.EndTime,
 				},
-				"error400": {
+				"http.error400": {
 					Value: output.Error400,
 					Start: output.StartTime,
 					End:   output.EndTime,
 				},
-				"error500": {
+				"http.error500": {
 					Value: output.Error500,
 					Start: output.StartTime,
 					End:   output.EndTime,
