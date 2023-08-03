@@ -4,8 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/IglooCloud/igloo-observability/internal/log"
+
 	_ "github.com/mattn/go-sqlite3"
 )
+
+var logger = log.Default().Service("store")
 
 func Exec(db *sql.DB, query string, args ...any) (sql.Result, error) {
 	stmt, err := db.Prepare(query)
@@ -28,27 +32,35 @@ func Query(db *sql.DB, query string, args ...any) (*sql.Rows, error) {
 }
 
 func Initialize(db *sql.DB) error {
-	// create table
-	sql_table := `
-	CREATE TABLE IF NOT EXISTS realrecords(
+	_, err := Exec(db, `CREATE TABLE IF NOT EXISTS realrecords(
 		value REAL NOT NULL,
 		timestamp INTEGER NOT NULL,
 		bucket TEXT NOT NULL
-	);
-	
-	CREATE INDEX IF NOT EXISTS idx_realrecords_bucket_timestamp ON realrecords(bucket, timestamp);
+	);`)
+	if err != nil {
+		return err
+	}
 
-	CREATE TABLE IF NOT EXISTS intperiodrecords(
+	_, err = Exec(db, `CREATE INDEX IF NOT EXISTS idx_realrecords_bucket_timestamp ON realrecords(bucket, timestamp);`)
+	if err != nil {
+		return err
+	}
+
+	_, err = Exec(db, `CREATE TABLE IF NOT EXISTS intperiodrecords(
 		value REAL NOT NULL,
 		start INTEGER NOT NULL,
 		end INTEGER NOT NULL,
 		bucket TEXT NOT NULL
-	);
-	
-	CREATE INDEX IF NOT EXISTS idx_intperiodrecords_bucket_timestamp ON intperiodrecords(bucket, start, end);
-	`
+	);`)
+	if err != nil {
+		return err
+	}
 
-	_, err := Exec(db, sql_table)
+	_, err = Exec(db, `CREATE INDEX IF NOT EXISTS idx_intperiodrecords_bucket_timestamp ON intperiodrecords(bucket, start, end);`)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
