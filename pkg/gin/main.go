@@ -1,3 +1,13 @@
+// This package provides a Gin middleware and route handler for collecting metrics
+// from Gin web applications and exposing them in a igloo-observability compatible format.
+//
+// To instrument a Gin application, add the middleware to the Gin router and add the route handler:
+//
+//	observabilityMiddleware, metricsHandler := observability.New()
+//	r.Use(observabilityMiddleware)
+//	r.GET("/metrics", metricsHandler)
+//
+// To secure the metrics endpoint, set the IGLOO_OBSERVABILITY_SECRET environment variable.
 package observability
 
 import (
@@ -11,6 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// New returns a Gin middleware and route handler for collecting metrics from Gin web applications
 func New() (middleware gin.HandlerFunc, routeHandler gin.HandlerFunc) {
 	m := metrics{
 		lock:          &sync.RWMutex{},
