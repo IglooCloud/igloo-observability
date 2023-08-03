@@ -1,6 +1,8 @@
 package observability
 
 import (
+	"net/http"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -29,7 +31,14 @@ func newMiddleware(m metrics) gin.HandlerFunc {
 }
 
 func newRouteHandler(m metrics) gin.HandlerFunc {
+	secret := os.Getenv("IGLOO_OBSERVABILITY_SECRET")
+
 	return func(c *gin.Context) {
+		if secret != "" && c.GetHeader("igloo-observability-secret") != secret {
+			c.String(http.StatusUnauthorized, "Wrong secret")
+			return
+		}
+
 		output := m.Reset()
 
 		payload := collector.FetchResponse{
